@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import RideMap from "@/components/RideMap";
 import VehicleSelector from "@/components/VehicleSelector";
 import RideSummary from "@/components/RideSummary";
@@ -28,6 +29,8 @@ const RideBooking = () => {
     selectedVehicle: "boda", // Default: boda, tuk-tuk, car
     estimatedPrice: 0,
     estimatedTime: "",
+    isDelivery: false,
+    packageInfo: "",
   });
 
   const handleLocationSubmit = (e: React.FormEvent) => {
@@ -51,18 +54,22 @@ const RideBooking = () => {
     setBookingStep("vehicle");
   };
 
-  const handleVehicleSelect = (vehicle: string, price: number) => {
+  const handleVehicleSelect = (vehicle: string, price: number, isDelivery: boolean) => {
     setBookingData({
       ...bookingData,
       selectedVehicle: vehicle,
       estimatedPrice: price,
+      isDelivery: isDelivery,
     });
     setBookingStep("summary");
   };
 
   const handleBookRide = () => {
+    // Store delivery status in localStorage for the ride status page
+    localStorage.setItem("isDelivery", bookingData.isDelivery.toString());
+    
     toast({
-      title: "Ride Booked Successfully!",
+      title: `${bookingData.isDelivery ? "Delivery" : "Ride"} Booked Successfully!`,
       description: "A driver will be assigned to you shortly.",
     });
     navigate("/ride-status");
@@ -73,7 +80,7 @@ const RideBooking = () => {
       <Navbar />
       <main className="flex-grow">
         <div className="container py-8">
-          <h1 className="text-3xl font-bold mb-6">Book a Ride</h1>
+          <h1 className="text-3xl font-bold mb-6">Book a {bookingData.isDelivery ? "Delivery" : "Ride"}</h1>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Left column - Form */}
@@ -120,8 +127,8 @@ const RideBooking = () => {
                 {bookingStep === "vehicle" && (
                   <>
                     <CardHeader>
-                      <CardTitle>Select Vehicle Type</CardTitle>
-                      <CardDescription>Choose the type of ride you need</CardDescription>
+                      <CardTitle>Select Service Type</CardTitle>
+                      <CardDescription>Choose between passenger ride or package delivery</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <VehicleSelector 
@@ -142,8 +149,8 @@ const RideBooking = () => {
                 {bookingStep === "summary" && (
                   <>
                     <CardHeader>
-                      <CardTitle>Ride Summary</CardTitle>
-                      <CardDescription>Review and confirm your ride details</CardDescription>
+                      <CardTitle>{bookingData.isDelivery ? "Delivery" : "Ride"} Summary</CardTitle>
+                      <CardDescription>Review and confirm your details</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <RideSummary 
@@ -152,7 +159,22 @@ const RideBooking = () => {
                         vehicleType={bookingData.selectedVehicle}
                         estimatedPrice={bookingData.estimatedPrice}
                         estimatedTime={bookingData.estimatedTime}
+                        isDelivery={bookingData.isDelivery}
                       />
+                      
+                      {bookingData.isDelivery && (
+                        <div className="mt-4 space-y-2">
+                          <Label htmlFor="packageInfo">Package Description (optional)</Label>
+                          <Textarea 
+                            id="packageInfo"
+                            placeholder="Describe your package size, weight, or any special instructions for the driver"
+                            value={bookingData.packageInfo}
+                            onChange={(e) => setBookingData({...bookingData, packageInfo: e.target.value})}
+                            className="resize-none"
+                          />
+                        </div>
+                      )}
+                      
                       <div className="flex gap-4 mt-6">
                         <Button 
                           variant="outline" 
@@ -165,7 +187,7 @@ const RideBooking = () => {
                           className="flex-1"
                           onClick={handleBookRide}
                         >
-                          Book Ride
+                          {bookingData.isDelivery ? "Book Delivery" : "Book Ride"}
                         </Button>
                       </div>
                     </CardContent>

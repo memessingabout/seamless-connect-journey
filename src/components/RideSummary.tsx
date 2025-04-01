@@ -1,5 +1,5 @@
 
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Package, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface RideSummaryProps {
@@ -8,6 +8,7 @@ interface RideSummaryProps {
   vehicleType: string;
   estimatedPrice: number;
   estimatedTime: string;
+  isDelivery: boolean;
 }
 
 const RideSummary = ({
@@ -16,6 +17,7 @@ const RideSummary = ({
   vehicleType,
   estimatedPrice,
   estimatedTime,
+  isDelivery = false,
 }: RideSummaryProps) => {
   const getVehicleDisplay = () => {
     switch (vehicleType) {
@@ -25,6 +27,12 @@ const RideSummary = ({
         return "Tuk-tuk 🛺";
       case "car":
         return "Car 🚗";
+      case "boda-delivery":
+        return "Boda Express 🏍️";
+      case "tuktuk-delivery":
+        return "Tuk-tuk Cargo 🛺";
+      case "van-delivery":
+        return "Van Delivery 🚚";
       default:
         return "Vehicle";
     }
@@ -32,6 +40,21 @@ const RideSummary = ({
 
   return (
     <div className="space-y-4">
+      {/* Service Type Indicator */}
+      <div className="bg-secondary/40 rounded-md p-2 flex items-center justify-center space-x-2">
+        {isDelivery ? (
+          <>
+            <Package className="h-5 w-5" />
+            <span className="font-medium">Package Delivery</span>
+          </>
+        ) : (
+          <>
+            <User className="h-5 w-5" />
+            <span className="font-medium">Passenger Ride</span>
+          </>
+        )}
+      </div>
+
       {/* Route information */}
       <div className="space-y-4">
         <div className="flex">
@@ -50,7 +73,7 @@ const RideSummary = ({
               <p className="font-medium">{pickup}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Drop-off</p>
+              <p className="text-sm text-muted-foreground">{isDelivery ? "Drop-off (Delivery)" : "Drop-off"}</p>
               <p className="font-medium">{dropoff}</p>
             </div>
           </div>
@@ -62,7 +85,7 @@ const RideSummary = ({
       {/* Ride details */}
       <div className="space-y-2">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Vehicle Type</span>
+          <span className="text-muted-foreground">{isDelivery ? "Delivery Vehicle" : "Vehicle Type"}</span>
           <span className="font-medium">{getVehicleDisplay()}</span>
         </div>
         <div className="flex justify-between">
@@ -82,7 +105,10 @@ const RideSummary = ({
       </div>
 
       <div className="text-xs text-muted-foreground">
-        Price may vary based on traffic and actual route taken
+        {isDelivery 
+          ? "Price may vary based on actual weight and distance"
+          : "Price may vary based on traffic and actual route taken"
+        }
       </div>
     </div>
   );

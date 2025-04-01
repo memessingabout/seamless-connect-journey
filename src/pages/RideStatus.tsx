@@ -5,14 +5,29 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, MessageCircle, Clock, ArrowLeft } from "lucide-react";
+import { Phone, MessageCircle, Clock, ArrowLeft, Package, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import RideMap from "@/components/RideMap";
+import ChatInterface from "@/components/ChatInterface";
+import { useToast } from "@/hooks/use-toast";
 
 const RideStatus = () => {
+  const { toast } = useToast();
   const [progress, setProgress] = useState(10);
   const [status, setStatus] = useState("Finding your driver...");
   const [driverAssigned, setDriverAssigned] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [isDelivery, setIsDelivery] = useState(false);
+  
+  // Get this from the global state or URL params in a real app
+  const [rideDetails, setRideDetails] = useState({
+    pickup: "Moi Avenue, Nairobi",
+    dropoff: "Westlands, Nairobi",
+    vehicleType: "boda",
+    price: 250,
+  });
+  
   const [driverData, setDriverData] = useState({
     name: "John Kamau",
     rating: 4.8,
@@ -24,15 +39,46 @@ const RideStatus = () => {
   });
 
   useEffect(() => {
+    // Check local storage for ride type
+    const storedIsDelivery = localStorage.getItem("isDelivery");
+    if (storedIsDelivery) {
+      setIsDelivery(storedIsDelivery === "true");
+    }
+
     // Simulate driver finding and ride progress
-    const timer = setTimeout(() => {
+    const timer1 = setTimeout(() => {
       setProgress(30);
       setStatus("Driver assigned and en route");
       setDriverAssigned(true);
     }, 4000);
 
-    return () => clearTimeout(timer);
+    const timer2 = setTimeout(() => {
+      setProgress(60);
+      setStatus("Driver is approaching pickup location");
+    }, 8000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, []);
+
+  const handleCancelRide = () => {
+    toast({
+      title: "Ride Cancelled",
+      description: "Your ride has been successfully cancelled.",
+      variant: "destructive",
+    });
+    
+    // In a real app, you would redirect to the booking page after a short delay
+    setTimeout(() => {
+      window.location.href = "/ride-booking";
+    }, 2000);
+  };
+
+  const toggleChat = () => {
+    setShowChat(!showChat);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -44,14 +90,29 @@ const RideStatus = () => {
             Back to booking
           </Link>
 
-          <h1 className="text-3xl font-bold mb-6">Your Ride</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold">Your {isDelivery ? "Delivery" : "Ride"}</h1>
+            <div className="bg-secondary/40 rounded-md p-2 flex items-center space-x-2">
+              {isDelivery ? (
+                <>
+                  <Package className="h-5 w-5" />
+                  <span className="font-medium">Package Delivery</span>
+                </>
+              ) : (
+                <>
+                  <User className="h-5 w-5" />
+                  <span className="font-medium">Passenger Ride</span>
+                </>
+              )}
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Left column - Status */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Ride Status</CardTitle>
+                  <CardTitle>Status</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -73,11 +134,11 @@ const RideStatus = () => {
                     <div className="bg-muted p-4 rounded-md">
                       <div className="flex justify-between mb-2">
                         <span className="text-muted-foreground">Pickup</span>
-                        <span className="font-medium">Moi Avenue, Nairobi</span>
+                        <span className="font-medium">{rideDetails.pickup}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Drop-off</span>
-                        <span className="font-medium">Westlands, Nairobi</span>
+                        <span className="text-muted-foreground">{isDelivery ? "Delivery Location" : "Drop-off"}</span>
+                        <span className="font-medium">{rideDetails.dropoff}</span>
                       </div>
                     </div>
                   </div>
@@ -87,7 +148,7 @@ const RideStatus = () => {
               {driverAssigned && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Your Driver</CardTitle>
+                    <CardTitle>Your {isDelivery ? "Delivery Driver" : "Driver"}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center space-x-4">
@@ -105,7 +166,7 @@ const RideStatus = () => {
                                 <svg
                                   key={i}
                                   className={`h-4 w-4 ${
-                                    i < Math.floor(driverData.rating) ? "text-yellow" : "text-gray-300"
+                                    i < Math.floor(driverData.rating) ? "text-yellow-500" : "text-gray-300"
                                   }`}
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
@@ -131,24 +192,41 @@ const RideStatus = () => {
                         <Phone className="mr-2 h-4 w-4" />
                         Call
                       </Button>
-                      <Button variant="outline" className="flex-1">
+                      <Button 
+                        variant={showChat ? "default" : "outline"} 
+                        className="flex-1"
+                        onClick={toggleChat}
+                      >
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        Message
+                        {showChat ? "Hide Chat" : "Message"}
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
+              {showChat && driverAssigned && (
+                <ChatInterface 
+                  driverName={driverData.name} 
+                  driverPhoto={driverData.photo}
+                />
+              )}
+
               <Card>
                 <CardHeader>
-                  <CardTitle>Ride Details</CardTitle>
+                  <CardTitle>{isDelivery ? "Delivery Details" : "Ride Details"}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Service Type</span>
+                      <span className="font-medium">{isDelivery ? "Package Delivery" : "Passenger Ride"}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Vehicle</span>
-                      <span className="font-medium">Boda Boda 🏍️</span>
+                      <span className="font-medium">
+                        {isDelivery ? "Boda Express 🏍️" : "Boda Boda 🏍️"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Payment Method</span>
@@ -156,38 +234,37 @@ const RideStatus = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Price</span>
-                      <span className="font-medium">KSh 250</span>
+                      <span className="font-medium">KSh {rideDetails.price}</span>
                     </div>
                   </div>
 
-                  <Button className="w-full mt-4" variant="destructive">
-                    Cancel Ride
+                  <Button 
+                    className="w-full mt-4" 
+                    variant="destructive"
+                    onClick={handleCancelRide}
+                  >
+                    Cancel {isDelivery ? "Delivery" : "Ride"}
                   </Button>
                 </CardContent>
               </Card>
             </div>
 
             {/* Right column - Map */}
-            <div>
-              <Card className="h-full">
-                <CardContent className="p-0">
-                  <div className="h-[500px] rounded-md bg-muted flex items-center justify-center">
-                    <div className="text-center p-6">
-                      <div className="text-2xl mb-2">📍 Live Tracking</div>
-                      <p className="text-muted-foreground mb-4">
-                        {driverAssigned ? (
-                          <>Your driver is en route to your pickup location</>
-                        ) : (
-                          <>Looking for nearby drivers</>
-                        )}
-                      </p>
-                      <div className="text-xs text-muted-foreground">
-                        In a production app, this would show live GPS tracking of your driver
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="space-y-6">
+              <RideMap 
+                pickup={rideDetails.pickup}
+                dropoff={rideDetails.dropoff}
+              />
+
+              {/* Only show chat in desktop at the bottom of map when it's not shown in the left column */}
+              {!showChat && driverAssigned && (
+                <div className="hidden md:block">
+                  <ChatInterface 
+                    driverName={driverData.name} 
+                    driverPhoto={driverData.photo}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

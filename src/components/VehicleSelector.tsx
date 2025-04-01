@@ -1,15 +1,16 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Car } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Car, Package, Bike } from "lucide-react";
 
 interface VehicleSelectorProps {
   estimatedBasePrice: number;
-  onSelect: (vehicleType: string, price: number) => void;
+  onSelect: (vehicleType: string, price: number, isDelivery: boolean) => void;
 }
 
 const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps) => {
-  const vehicleOptions = [
+  const rideOptions = [
     {
       id: "boda",
       name: "Boda Boda",
@@ -39,40 +40,111 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
     },
   ];
 
+  const deliveryOptions = [
+    {
+      id: "boda-delivery",
+      name: "Boda Express",
+      description: "Small packages, documents",
+      priceMultiplier: 1.2,
+      capacity: "Up to 5 kg",
+      eta: "5-15 mins",
+      icon: <Bike className="h-8 w-8" />,
+    },
+    {
+      id: "tuktuk-delivery",
+      name: "Tuk-tuk Cargo",
+      description: "Medium-sized packages",
+      priceMultiplier: 1.8,
+      capacity: "Up to 20 kg",
+      eta: "10-20 mins",
+      icon: "🛺",
+    },
+    {
+      id: "van-delivery",
+      name: "Van Delivery",
+      description: "For larger shipments or furniture",
+      priceMultiplier: 3.0,
+      capacity: "Up to 200 kg",
+      eta: "15-30 mins",
+      icon: <Package className="h-8 w-8" />,
+    },
+  ];
+
   return (
-    <div className="space-y-4">
-      {vehicleOptions.map((vehicle) => (
-        <Card 
-          key={vehicle.id}
-          className="hover:border-primary cursor-pointer transition-all"
-          onClick={() => onSelect(vehicle.id, Math.round(estimatedBasePrice * vehicle.priceMultiplier))}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 text-4xl mr-4">
-                {typeof vehicle.icon === "string" ? vehicle.icon : vehicle.icon}
-              </div>
-              <div className="flex-grow">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium">{vehicle.name}</h3>
-                    <p className="text-sm text-muted-foreground">{vehicle.description}</p>
-                    <div className="text-xs mt-1">
-                      <span className="text-muted-foreground">Capacity: {vehicle.capacity} • ETA: {vehicle.eta}</span>
+    <Tabs defaultValue="ride" className="w-full">
+      <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsTrigger value="ride">Passenger Ride</TabsTrigger>
+        <TabsTrigger value="delivery">Delivery</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="ride" className="space-y-4">
+        {rideOptions.map((vehicle) => (
+          <Card 
+            key={vehicle.id}
+            className="hover:border-primary cursor-pointer transition-all"
+            onClick={() => onSelect(vehicle.id, Math.round(estimatedBasePrice * vehicle.priceMultiplier), false)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 text-4xl mr-4">
+                  {typeof vehicle.icon === "string" ? vehicle.icon : vehicle.icon}
+                </div>
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{vehicle.name}</h3>
+                      <p className="text-sm text-muted-foreground">{vehicle.description}</p>
+                      <div className="text-xs mt-1">
+                        <span className="text-muted-foreground">Capacity: {vehicle.capacity} • ETA: {vehicle.eta}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">
-                      KSh {Math.round(estimatedBasePrice * vehicle.priceMultiplier)}
+                    <div className="text-right">
+                      <div className="font-medium">
+                        KSh {Math.round(estimatedBasePrice * vehicle.priceMultiplier)}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+            </CardContent>
+          </Card>
+        ))}
+      </TabsContent>
+
+      <TabsContent value="delivery" className="space-y-4">
+        {deliveryOptions.map((vehicle) => (
+          <Card 
+            key={vehicle.id}
+            className="hover:border-primary cursor-pointer transition-all"
+            onClick={() => onSelect(vehicle.id, Math.round(estimatedBasePrice * vehicle.priceMultiplier), true)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 text-4xl mr-4">
+                  {typeof vehicle.icon === "string" ? vehicle.icon : vehicle.icon}
+                </div>
+                <div className="flex-grow">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium">{vehicle.name}</h3>
+                      <p className="text-sm text-muted-foreground">{vehicle.description}</p>
+                      <div className="text-xs mt-1">
+                        <span className="text-muted-foreground">Max weight: {vehicle.capacity} • ETA: {vehicle.eta}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">
+                        KSh {Math.round(estimatedBasePrice * vehicle.priceMultiplier)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </TabsContent>
+    </Tabs>
   );
 };
 
