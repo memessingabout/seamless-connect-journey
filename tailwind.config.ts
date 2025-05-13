@@ -53,20 +53,15 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				orange: {
-					DEFAULT: '#FF6B00',
-					light: '#FF8A3D',
-					dark: '#E55A00'
+				blue: {
+					DEFAULT: '#1565C0',
+					light: '#1976D2',
+					dark: '#0D47A1'
 				},
-				green: {
-					DEFAULT: '#046307',
-					light: '#0A8010',
-					dark: '#034705'
-				},
-				yellow: {
-					DEFAULT: '#FFD100',
-					light: '#FFDB40',
-					dark: '#E5BC00'
+				gold: {
+					DEFAULT: '#FFC107',
+					light: '#FFD54F',
+					dark: '#FFA000'
 				}
 			},
 			borderRadius: {
@@ -100,12 +95,23 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0)'
 					},
+				},
+				'slide-in': {
+					'0%': { 
+						opacity: '0',
+						transform: 'translateX(-20px)'
+					},
+					'100%': { 
+						opacity: '1',
+						transform: 'translateX(0)'
+					},
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out'
+				'fade-in': 'fade-in 0.5s ease-out',
+				'slide-in': 'slide-in 0.3s ease-out'
 			}
 		}
 	},

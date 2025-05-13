@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import RideMap from "@/components/RideMap";
 import VehicleSelector from "@/components/VehicleSelector";
 import RideSummary from "@/components/RideSummary";
+import FoodOrderSelector from "@/components/FoodOrderSelector";
 import {
   Card,
   CardContent,
@@ -30,7 +31,9 @@ const RideBooking = () => {
     estimatedPrice: 0,
     estimatedTime: "",
     isDelivery: false,
+    isFood: false,
     packageInfo: "",
+    foodOrderInfo: "",
   });
 
   const handleLocationSubmit = (e: React.FormEvent) => {
@@ -54,45 +57,70 @@ const RideBooking = () => {
     setBookingStep("vehicle");
   };
 
-  const handleVehicleSelect = (vehicle: string, price: number, isDelivery: boolean) => {
+  const handleVehicleSelect = (vehicle: string, price: number, isDelivery: boolean, isFood: boolean = false) => {
     setBookingData({
       ...bookingData,
       selectedVehicle: vehicle,
       estimatedPrice: price,
       isDelivery: isDelivery,
+      isFood: isFood,
+      estimatedTime: isFood ? "25-40 mins" : bookingData.estimatedTime, // Adjust time for food orders
     });
     setBookingStep("summary");
   };
 
   const handleBookRide = () => {
-    // Store delivery status in localStorage for the ride status page
+    // Store delivery and food status in localStorage for the ride status page
     localStorage.setItem("isDelivery", bookingData.isDelivery.toString());
+    localStorage.setItem("isFood", bookingData.isFood.toString());
+    
+    let toastMessage = "Ride Booked Successfully!";
+    let toastDescription = "A driver will be assigned to you shortly.";
+    
+    if (bookingData.isFood) {
+      toastMessage = "Food Order Placed Successfully!";
+      toastDescription = "Your order will be processed and delivered shortly.";
+    } else if (bookingData.isDelivery) {
+      toastMessage = "Delivery Booked Successfully!";
+      toastDescription = "A driver will be assigned to your delivery shortly.";
+    }
     
     toast({
-      title: `${bookingData.isDelivery ? "Delivery" : "Ride"} Booked Successfully!`,
-      description: "A driver will be assigned to you shortly.",
+      title: toastMessage,
+      description: toastDescription,
     });
+    
     navigate("/ride-status");
+  };
+
+  const getBookingTitle = () => {
+    if (bookingData.isFood) {
+      return "Order Food";
+    } else if (bookingData.isDelivery) {
+      return "Book a Delivery";
+    } else {
+      return "Book a Ride";
+    }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow bg-gradient-to-br from-blue-light/5 to-gold-light/5">
         <div className="container py-8">
-          <h1 className="text-3xl font-bold mb-6">Book a {bookingData.isDelivery ? "Delivery" : "Ride"}</h1>
+          <h1 className="text-3xl font-bold mb-6 text-blue-DEFAULT">{getBookingTitle()}</h1>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Left column - Form */}
             <div>
-              <Card>
+              <Card className="modern-shadow border-blue-light/10">
                 {bookingStep === "location" && (
                   <>
-                    <CardHeader>
+                    <CardHeader className="border-b border-blue-light/10">
                       <CardTitle>Where are you going?</CardTitle>
                       <CardDescription>Enter your pickup and drop-off locations</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                       <form onSubmit={handleLocationSubmit} className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="pickup">Pickup Location</Label>
@@ -116,7 +144,7 @@ const RideBooking = () => {
                             }
                           />
                         </div>
-                        <Button type="submit" className="w-full">
+                        <Button type="submit" className="w-full bg-blue-DEFAULT hover:bg-blue-dark">
                           Continue
                         </Button>
                       </form>
@@ -126,11 +154,11 @@ const RideBooking = () => {
 
                 {bookingStep === "vehicle" && (
                   <>
-                    <CardHeader>
+                    <CardHeader className="border-b border-blue-light/10">
                       <CardTitle>Select Service Type</CardTitle>
-                      <CardDescription>Choose between passenger ride or package delivery</CardDescription>
+                      <CardDescription>Choose between passenger ride, package delivery or food order</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                       <VehicleSelector 
                         estimatedBasePrice={bookingData.estimatedPrice} 
                         onSelect={handleVehicleSelect} 
@@ -148,11 +176,13 @@ const RideBooking = () => {
 
                 {bookingStep === "summary" && (
                   <>
-                    <CardHeader>
-                      <CardTitle>{bookingData.isDelivery ? "Delivery" : "Ride"} Summary</CardTitle>
+                    <CardHeader className="border-b border-blue-light/10">
+                      <CardTitle>
+                        {bookingData.isFood ? "Order" : bookingData.isDelivery ? "Delivery" : "Ride"} Summary
+                      </CardTitle>
                       <CardDescription>Review and confirm your details</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                       <RideSummary 
                         pickup={bookingData.pickup}
                         dropoff={bookingData.dropoff}
@@ -160,9 +190,23 @@ const RideBooking = () => {
                         estimatedPrice={bookingData.estimatedPrice}
                         estimatedTime={bookingData.estimatedTime}
                         isDelivery={bookingData.isDelivery}
+                        isFood={bookingData.isFood}
                       />
                       
-                      {bookingData.isDelivery && (
+                      {bookingData.isFood && (
+                        <div className="mt-4 space-y-2">
+                          <Label htmlFor="foodOrderInfo">Special Instructions (optional)</Label>
+                          <Textarea 
+                            id="foodOrderInfo"
+                            placeholder="Any special instructions for your order (e.g., allergies, extra spicy)"
+                            value={bookingData.foodOrderInfo}
+                            onChange={(e) => setBookingData({...bookingData, foodOrderInfo: e.target.value})}
+                            className="resize-none"
+                          />
+                        </div>
+                      )}
+                      
+                      {bookingData.isDelivery && !bookingData.isFood && (
                         <div className="mt-4 space-y-2">
                           <Label htmlFor="packageInfo">Package Description (optional)</Label>
                           <Textarea 
@@ -184,10 +228,15 @@ const RideBooking = () => {
                           Back
                         </Button>
                         <Button 
-                          className="flex-1"
+                          className="flex-1 bg-blue-DEFAULT hover:bg-blue-dark"
                           onClick={handleBookRide}
                         >
-                          {bookingData.isDelivery ? "Book Delivery" : "Book Ride"}
+                          {bookingData.isFood 
+                            ? "Place Order" 
+                            : bookingData.isDelivery 
+                              ? "Book Delivery" 
+                              : "Book Ride"
+                          }
                         </Button>
                       </div>
                     </CardContent>

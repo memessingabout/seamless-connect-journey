@@ -2,11 +2,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Car, Package, Bike } from "lucide-react";
+import { Car, Package, Bike, Utensils } from "lucide-react";
 
 interface VehicleSelectorProps {
   estimatedBasePrice: number;
-  onSelect: (vehicleType: string, price: number, isDelivery: boolean) => void;
+  onSelect: (vehicleType: string, price: number, isDelivery: boolean, isFood?: boolean) => void;
 }
 
 const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps) => {
@@ -72,21 +72,22 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
 
   return (
     <Tabs defaultValue="ride" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
+      <TabsList className="grid w-full grid-cols-3 mb-4 bg-blue-DEFAULT/10">
         <TabsTrigger value="ride">Passenger Ride</TabsTrigger>
         <TabsTrigger value="delivery">Delivery</TabsTrigger>
+        <TabsTrigger value="food" className="animate-pulse">Food Order</TabsTrigger>
       </TabsList>
 
       <TabsContent value="ride" className="space-y-4">
         {rideOptions.map((vehicle) => (
           <Card 
             key={vehicle.id}
-            className="hover:border-primary cursor-pointer transition-all"
+            className="hover:border-blue-DEFAULT cursor-pointer transition-all hover:shadow-md"
             onClick={() => onSelect(vehicle.id, Math.round(estimatedBasePrice * vehicle.priceMultiplier), false)}
           >
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 text-4xl mr-4">
+                <div className="flex-shrink-0 text-4xl mr-4 bg-blue-light/10 p-2 rounded-md flex items-center justify-center min-w-14 h-14">
                   {typeof vehicle.icon === "string" ? vehicle.icon : vehicle.icon}
                 </div>
                 <div className="flex-grow">
@@ -99,7 +100,7 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">
+                      <div className="font-medium text-blue-DEFAULT">
                         KSh {Math.round(estimatedBasePrice * vehicle.priceMultiplier)}
                       </div>
                     </div>
@@ -115,12 +116,12 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
         {deliveryOptions.map((vehicle) => (
           <Card 
             key={vehicle.id}
-            className="hover:border-primary cursor-pointer transition-all"
+            className="hover:border-blue-DEFAULT cursor-pointer transition-all hover:shadow-md"
             onClick={() => onSelect(vehicle.id, Math.round(estimatedBasePrice * vehicle.priceMultiplier), true)}
           >
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 text-4xl mr-4">
+                <div className="flex-shrink-0 text-4xl mr-4 bg-blue-light/10 p-2 rounded-md flex items-center justify-center min-w-14 h-14">
                   {typeof vehicle.icon === "string" ? vehicle.icon : vehicle.icon}
                 </div>
                 <div className="flex-grow">
@@ -133,7 +134,7 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">
+                      <div className="font-medium text-blue-DEFAULT">
                         KSh {Math.round(estimatedBasePrice * vehicle.priceMultiplier)}
                       </div>
                     </div>
@@ -143,6 +144,13 @@ const VehicleSelector = ({ estimatedBasePrice, onSelect }: VehicleSelectorProps)
             </CardContent>
           </Card>
         ))}
+      </TabsContent>
+
+      <TabsContent value="food" className="space-y-4">
+        <FoodOrderSelector 
+          estimatedBasePrice={estimatedBasePrice}
+          onSelect={(restaurantId, price) => onSelect("food-delivery", price, false, true)}
+        />
       </TabsContent>
     </Tabs>
   );
