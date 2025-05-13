@@ -1,8 +1,8 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Car, Package, Bike, Utensils } from "lucide-react";
+import FoodOrderSelector from "@/components/FoodOrderSelector";
 
 interface VehicleSelectorProps {
   estimatedBasePrice: number;
